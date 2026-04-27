@@ -34,12 +34,39 @@ fetch('tools.json')
 let favorites = JSON.parse(localStorage.getItem("fav")) || [];
 let usage = JSON.parse(localStorage.getItem("use")) || {};
 
-function recommend(q){
-  q = q.toLowerCase();
-  if(q.includes("video")) return "ChatGPT → Runway → ElevenLabs";
-  if(q.includes("contenido")) return "ChatGPT → Perplexity → Canva";
-  if(q.includes("codigo")) return "ChatGPT → Claude";
-  return "ChatGPT → Perplexity";
+async function recommendAI(query) {
+  query = query.toLowerCase();
+
+  let scores = {};
+
+  tools.forEach(tool => {
+    let score = 0;
+
+    const keywords = tool.use.split(" ");
+
+    keywords.forEach(k => {
+      if(query.includes(k)) score += 2;
+    });
+
+    // bonus por coincidencia parcial
+    if(query.includes(tool.name.toLowerCase())) score += 3;
+
+    if(score > 0){
+      scores[tool.name] = score;
+    }
+  });
+
+  // ordenar por score
+  const sorted = Object.entries(scores)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0,5)
+    .map(x => x[0]);
+
+  if(sorted.length === 0){
+    return "ChatGPT → Perplexity";
+  }
+
+  return sorted.join(" → ");
 }
 
 function renderFavorites(){
@@ -57,9 +84,11 @@ function renderUsage(){
 document.getElementById("search").addEventListener("input", e => {
   const q = e.target.value.toLowerCase();
 
+  recommendAI(q).then(result => {
   document.getElementById("recommendation").innerHTML = `
-    <b>🤖 Recomendación:</b> ${recommend(q)}
+    <b>🤖 Recomendación inteligente:</b> ${result}
   `;
+});
 
   const filtered = tools.filter(t => t.use.includes(q));
 
