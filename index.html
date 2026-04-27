@@ -3,37 +3,98 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>AI Dashboard</title>
+  <title>AI Dashboard PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="p-6">
+<body class="p-6 bg-gray-100">
 
-<h1 class="text-2xl font-bold mb-4">AI Dashboard 🚀</h1>
+<h1 class="text-2xl font-bold mb-4">AI Dashboard PRO 🚀</h1>
 
-<input id="search" placeholder="¿Qué quieres hacer?" class="border p-2 w-full mb-4"/>
+<input id="search" placeholder="¿Qué quieres hacer? (ej: crear video, contenido, código)" class="border p-2 w-full mb-4"/>
 
-<div id="results" class="grid gap-4"></div>
+<div id="recommendation" class="mb-4 p-4 bg-white rounded shadow"></div>
+
+<div id="results" class="grid gap-4 mb-6"></div>
+
+<h2 class="text-xl font-bold mb-2">⭐ Favoritos</h2>
+<div id="favorites" class="grid gap-2 mb-6"></div>
+
+<h2 class="text-xl font-bold mb-2">📊 Uso</h2>
+<div id="usage" class="grid gap-2"></div>
 
 <script>
 const tools = [
   { name: "ChatGPT", use: "ideas contenido codigo", url: "https://chat.openai.com" },
-  { name: "Perplexity", use: "investigacion", url: "https://perplexity.ai" },
+  { name: "Perplexity", use: "investigacion datos", url: "https://perplexity.ai" },
   { name: "Canva", use: "diseño marketing", url: "https://canva.com" },
-  { name: "Runway", use: "video", url: "https://runwayml.com" },
+  { name: "Runway", use: "video contenido", url: "https://runwayml.com" },
   { name: "ElevenLabs", use: "voz audio", url: "https://elevenlabs.io" }
 ];
 
+let favorites = JSON.parse(localStorage.getItem("fav")) || [];
+let usage = JSON.parse(localStorage.getItem("use")) || {};
+
+function recommend(q){
+  q = q.toLowerCase();
+  if(q.includes("video")) return "ChatGPT → Runway → ElevenLabs";
+  if(q.includes("contenido")) return "ChatGPT → Perplexity → Canva";
+  if(q.includes("codigo")) return "ChatGPT → Claude";
+  return "ChatGPT → Perplexity";
+}
+
+function renderFavorites(){
+  document.getElementById("favorites").innerHTML = favorites.map(f => `
+    <div class="p-2 bg-white rounded shadow">${f.name}</div>
+  `).join("");
+}
+
+function renderUsage(){
+  document.getElementById("usage").innerHTML = Object.entries(usage).map(([k,v]) => `
+    <div class="p-2 bg-white rounded shadow">${k}: ${v}</div>
+  `).join("");
+}
+
 document.getElementById("search").addEventListener("input", e => {
   const q = e.target.value.toLowerCase();
+
+  document.getElementById("recommendation").innerHTML = `
+    <b>🤖 Recomendación:</b> ${recommend(q)}
+  `;
+
   const filtered = tools.filter(t => t.use.includes(q));
-  
+
   document.getElementById("results").innerHTML = filtered.map(t => `
-    <div class="border p-4">
+    <div class="border p-4 bg-white rounded shadow">
       <h2 class="font-bold">${t.name}</h2>
-      <a href="${t.url}" target="_blank" class="text-blue-500">Abrir</a>
+      <div class="flex gap-2 mt-2">
+        <a href="${t.url}" target="_blank">
+          <button onclick="track('${t.name}')" class="bg-blue-500 text-white px-2 py-1 rounded">Abrir</button>
+        </a>
+        <button onclick="fav('${t.name}')" class="bg-yellow-400 px-2 py-1 rounded">⭐</button>
+      </div>
     </div>
   `).join("");
 });
+
+function fav(name){
+  const tool = tools.find(t => t.name === name);
+  if(!favorites.find(f => f.name === name)){
+    favorites.push(tool);
+  } else {
+    favorites = favorites.filter(f => f.name !== name);
+  }
+  localStorage.setItem("fav", JSON.stringify(favorites));
+  renderFavorites();
+}
+
+function track(name){
+  usage[name] = (usage[name] || 0) + 1;
+  localStorage.setItem("use", JSON.stringify(usage));
+  renderUsage();
+}
+
+renderFavorites();
+renderUsage();
 </script>
 
 </body>
