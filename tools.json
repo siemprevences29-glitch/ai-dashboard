@@ -1,0 +1,12 @@
+[
+{ "name": "ChatGPT", "use": "ideas contenido codigo", "url": "https://chat.openai.com" },
+{ "name": "Claude", "use": "writing analisis codigo", "url": "https://claude.ai" },
+{ "name": "Gemini", "use": "investigacion datos", "url": "https://gemini.google.com" },
+{ "name": "Perplexity", "use": "investigacion fuentes", "url": "https://perplexity.ai" },
+{ "name": "Canva", "use": "diseño marketing contenido", "url": "https://canva.com" },
+{ "name": "Runway", "use": "video contenido ai", "url": "https://runwayml.com" },
+{ "name": "ElevenLabs", "use": "voz audio narracion", "url": "https://elevenlabs.io" },
+{ "name": "Notion AI", "use": "productividad organizacion", "url": "https://notion.so" },
+{ "name": "Zapier", "use": "automatizacion integraciones", "url": "https://zapier.com" },
+{ "name": "Midjourney", "use": "imagenes arte ai", "url": "https://midjourney.com" }
+]
