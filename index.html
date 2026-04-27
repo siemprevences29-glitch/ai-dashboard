@@ -23,13 +23,13 @@
 <div id="usage" class="grid gap-2"></div>
 
 <script>
-const tools = [
-  { name: "ChatGPT", use: "ideas contenido codigo", url: "https://chat.openai.com" },
-  { name: "Perplexity", use: "investigacion datos", url: "https://perplexity.ai" },
-  { name: "Canva", use: "diseño marketing", url: "https://canva.com" },
-  { name: "Runway", use: "video contenido", url: "https://runwayml.com" },
-  { name: "ElevenLabs", use: "voz audio", url: "https://elevenlabs.io" }
-];
+let tools = [];
+
+fetch('tools.json')
+  .then(res => res.json())
+  .then(data => {
+    tools = data;
+  });
 
 let favorites = JSON.parse(localStorage.getItem("fav")) || [];
 let usage = JSON.parse(localStorage.getItem("use")) || {};
