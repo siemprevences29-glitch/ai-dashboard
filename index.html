@@ -102,9 +102,13 @@ async function recommendAI(query) {
 function renderResults(q = "") {
 
   const filtered = tools.filter(t => {
-    const matchSearch =
-      t.use.toLowerCase().includes(q) ||
-      t.name.toLowerCase().includes(q);
+    
+   const words = q.split(" ").filter(w => w.length > 2);
+
+const matchSearch = words.some(word =>
+  t.use.toLowerCase().includes(word) ||
+  t.name.toLowerCase().includes(word)
+);
 
     const matchCat =
       currentCategory === "all" ||
