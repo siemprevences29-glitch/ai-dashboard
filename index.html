@@ -36,6 +36,7 @@ fetch('tools.json')
   .then(res => res.json())
   .then(data => {
     tools = data;
+    renderResults(""); // 👈 esto hace que cargue desde inicio
   });
 
 let favorites = JSON.parse(localStorage.getItem("fav")) || [];
@@ -44,6 +45,8 @@ let currentCategory = "all";
 
 function filterCat(cat){
   currentCategory = cat;
+  const q = document.getElementById("search").value.toLowerCase();
+  renderResults(q);
 }
 async function recommendAI(query) {
   query = query.toLowerCase();
@@ -89,6 +92,24 @@ function renderFavorites(){
 function renderUsage(){
   document.getElementById("usage").innerHTML = Object.entries(usage).map(([k,v]) => `
     <div class="p-2 bg-white rounded shadow">${k}: ${v}</div>
+  `).join("");
+}
+
+  function renderResults(q = "") {
+
+  renderResults(q);
+
+  document.getElementById("results").innerHTML = filtered.map(t => `
+    <div class="border p-4 bg-white rounded shadow">
+      <h2 class="font-bold">${t.name}</h2>
+      <p class="text-sm text-gray-600">${t.desc || ""}</p>
+      <div class="flex gap-2 mt-2">
+        <a href="${t.url}" target="_blank">
+          <button onclick="track('${t.name}')" class="bg-blue-500 text-white px-2 py-1 rounded">Abrir</button>
+        </a>
+        <button onclick="fav('${t.name}')" class="bg-yellow-400 px-2 py-1 rounded">⭐</button>
+      </div>
+    </div>
   `).join("");
 }
 
