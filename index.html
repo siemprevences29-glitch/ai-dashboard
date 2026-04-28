@@ -9,7 +9,14 @@
 <body class="p-6 bg-gray-100">
 
 <h1 class="text-2xl font-bold mb-4">AI Dashboard PRO 🚀</h1>
-
+<div class="flex gap-2 mb-4 flex-wrap">
+  <button onclick="filterCat('all')" class="bg-black text-white px-3 py-1 rounded">Todo</button>
+  <button onclick="filterCat('video')" class="bg-gray-200 px-3 py-1 rounded">Video</button>
+  <button onclick="filterCat('imagen')" class="bg-gray-200 px-3 py-1 rounded">Imagen</button>
+  <button onclick="filterCat('audio')" class="bg-gray-200 px-3 py-1 rounded">Audio</button>
+  <button onclick="filterCat('dev')" class="bg-gray-200 px-3 py-1 rounded">Dev</button>
+  <button onclick="filterCat('marketing')" class="bg-gray-200 px-3 py-1 rounded">Marketing</button>
+</div>
 <input id="search" placeholder="¿Qué quieres hacer? (ej: crear video, contenido, código)" class="border p-2 w-full mb-4"/>
 
 <div id="recommendation" class="mb-4 p-4 bg-white rounded shadow"></div>
@@ -33,7 +40,11 @@ fetch('tools.json')
 
 let favorites = JSON.parse(localStorage.getItem("fav")) || [];
 let usage = JSON.parse(localStorage.getItem("use")) || {};
+let currentCategory = "all";
 
+function filterCat(cat){
+  currentCategory = cat;
+}
 async function recommendAI(query) {
   query = query.toLowerCase();
 
@@ -90,7 +101,11 @@ document.getElementById("search").addEventListener("input", e => {
   `;
 });
 
-  const filtered = tools.filter(t => t.use.includes(q));
+  const filtered = tools.filter(t => {
+  const matchSearch = t.use.includes(q);
+  const matchCat = currentCategory === "all" || t.category === currentCategory;
+  return matchSearch && matchCat;
+});
 
   document.getElementById("results").innerHTML = filtered.map(t => `
     <div class="border p-4 bg-white rounded shadow">
