@@ -95,6 +95,7 @@ document.getElementById("search").addEventListener("input", e => {
   document.getElementById("results").innerHTML = filtered.map(t => `
     <div class="border p-4 bg-white rounded shadow">
       <h2 class="font-bold">${t.name}</h2>
+<p class="text-sm text-gray-600">${t.desc || ""}</p>
       <div class="flex gap-2 mt-2">
         <a href="${t.url}" target="_blank">
           <button onclick="track('${t.name}')" class="bg-blue-500 text-white px-2 py-1 rounded">Abrir</button>
