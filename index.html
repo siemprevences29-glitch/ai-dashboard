@@ -9,6 +9,9 @@
 <body class="p-6 bg-gray-100">
 
 <h1 class="text-2xl font-bold mb-4">AI Dashboard PRO 🚀</h1>
+
+<!-- FILTROS -->
+
 <div class="flex gap-2 mb-4 flex-wrap">
   <button onclick="filterCat('all')" class="bg-black text-white px-3 py-1 rounded">Todo</button>
   <button onclick="filterCat('video')" class="bg-gray-200 px-3 py-1 rounded">Video</button>
@@ -17,37 +20,51 @@
   <button onclick="filterCat('dev')" class="bg-gray-200 px-3 py-1 rounded">Dev</button>
   <button onclick="filterCat('marketing')" class="bg-gray-200 px-3 py-1 rounded">Marketing</button>
 </div>
+
+<!-- BUSCADOR -->
+
 <input id="search" placeholder="¿Qué quieres hacer? (ej: crear video, contenido, código)" class="border p-2 w-full mb-4"/>
+
+<!-- RECOMENDADOR -->
 
 <div id="recommendation" class="mb-4 p-4 bg-white rounded shadow"></div>
 
+<!-- RESULTADOS -->
+
 <div id="results" class="grid gap-4 mb-6"></div>
+
+<!-- FAVORITOS -->
 
 <h2 class="text-xl font-bold mb-2">⭐ Favoritos</h2>
 <div id="favorites" class="grid gap-2 mb-6"></div>
+
+<!-- USO -->
 
 <h2 class="text-xl font-bold mb-2">📊 Uso</h2>
 <div id="usage" class="grid gap-2"></div>
 
 <script>
 let tools = [];
-
-fetch('tools.json')
-  .then(res => res.json())
-  .then(data => {
-    tools = data;
-    renderResults(""); // 👈 esto hace que cargue desde inicio
-  });
-
 let favorites = JSON.parse(localStorage.getItem("fav")) || [];
 let usage = JSON.parse(localStorage.getItem("use")) || {};
 let currentCategory = "all";
 
+// CARGAR JSON
+fetch('tools.json')
+  .then(res => res.json())
+  .then(data => {
+    tools = data;
+    renderResults("");
+  });
+
+// FILTRO POR CATEGORÍA
 function filterCat(cat){
   currentCategory = cat;
   const q = document.getElementById("search").value.toLowerCase();
   renderResults(q);
 }
+
+// RECOMENDADOR SIMPLE
 async function recommendAI(query) {
   query = query.toLowerCase();
 
@@ -62,7 +79,6 @@ async function recommendAI(query) {
       if(query.includes(k)) score += 2;
     });
 
-    // bonus por coincidencia parcial
     if(query.includes(tool.name.toLowerCase())) score += 3;
 
     if(score > 0){
@@ -70,7 +86,6 @@ async function recommendAI(query) {
     }
   });
 
-  // ordenar por score
   const sorted = Object.entries(scores)
     .sort((a,b) => b[1] - a[1])
     .slice(0,5)
@@ -83,21 +98,20 @@ async function recommendAI(query) {
   return sorted.join(" → ");
 }
 
-function renderFavorites(){
-  document.getElementById("favorites").innerHTML = favorites.map(f => `
-    <div class="p-2 bg-white rounded shadow">${f.name}</div>
-  `).join("");
-}
+// RENDER RESULTADOS (ARREGLADO)
+function renderResults(q = "") {
 
-function renderUsage(){
-  document.getElementById("usage").innerHTML = Object.entries(usage).map(([k,v]) => `
-    <div class="p-2 bg-white rounded shadow">${k}: ${v}</div>
-  `).join("");
-}
+  const filtered = tools.filter(t => {
+    const matchSearch =
+      t.use.toLowerCase().includes(q) ||
+      t.name.toLowerCase().includes(q);
 
-  function renderResults(q = "") {
+    const matchCat =
+      currentCategory === "all" ||
+      t.category === currentCategory;
 
-  renderResults(q);
+    return matchSearch && matchCat;
+  });
 
   document.getElementById("results").innerHTML = filtered.map(t => `
     <div class="border p-4 bg-white rounded shadow">
@@ -113,55 +127,57 @@ function renderUsage(){
   `).join("");
 }
 
+// BUSCADOR
 document.getElementById("search").addEventListener("input", e => {
   const q = e.target.value.toLowerCase();
 
   recommendAI(q).then(result => {
-  document.getElementById("recommendation").innerHTML = `
-    <b>🤖 Recomendación inteligente:</b> ${result}
-  `;
+    document.getElementById("recommendation").innerHTML = `
+      <b>🤖 Recomendación inteligente:</b> ${result}
+    `;
+  });
+
+  renderResults(q);
 });
 
-  const filtered = tools.filter(t => {
-  const matchSearch = t.use.includes(q);
-  const matchCat = currentCategory === "all" || t.category === currentCategory;
-  return matchSearch && matchCat;
-});
-
-  document.getElementById("results").innerHTML = filtered.map(t => `
-    <div class="border p-4 bg-white rounded shadow">
-      <h2 class="font-bold">${t.name}</h2>
-<p class="text-sm text-gray-600">${t.desc || ""}</p>
-      <div class="flex gap-2 mt-2">
-        <a href="${t.url}" target="_blank">
-          <button onclick="track('${t.name}')" class="bg-blue-500 text-white px-2 py-1 rounded">Abrir</button>
-        </a>
-        <button onclick="fav('${t.name}')" class="bg-yellow-400 px-2 py-1 rounded">⭐</button>
-      </div>
-    </div>
-  `).join("");
-});
-
+// FAVORITOS
 function fav(name){
   const tool = tools.find(t => t.name === name);
+
   if(!favorites.find(f => f.name === name)){
     favorites.push(tool);
   } else {
     favorites = favorites.filter(f => f.name !== name);
   }
+
   localStorage.setItem("fav", JSON.stringify(favorites));
   renderFavorites();
 }
 
+function renderFavorites(){
+  document.getElementById("favorites").innerHTML = favorites.map(f => `
+    <div class="p-2 bg-white rounded shadow">${f.name}</div>
+  `).join("");
+}
+
+// USO
 function track(name){
   usage[name] = (usage[name] || 0) + 1;
   localStorage.setItem("use", JSON.stringify(usage));
   renderUsage();
 }
 
+function renderUsage(){
+  document.getElementById("usage").innerHTML = Object.entries(usage).map(([k,v]) => `
+    <div class="p-2 bg-white rounded shadow">${k}: ${v}</div>
+  `).join("");
+}
+
+// INICIAL
 renderFavorites();
 renderUsage();
 </script>
 
 </body>
 </html>
+
