@@ -12,13 +12,13 @@
 
 <!-- FILTROS -->
 
-<div class="flex gap-2 mb-4 flex-wrap">
-  <button onclick="filterCat('all')" class="bg-black text-white px-3 py-1 rounded">Todo</button>
-  <button onclick="filterCat('video')" class="bg-gray-200 px-3 py-1 rounded">Video</button>
-  <button onclick="filterCat('imagen')" class="bg-gray-200 px-3 py-1 rounded">Imagen</button>
-  <button onclick="filterCat('audio')" class="bg-gray-200 px-3 py-1 rounded">Audio</button>
-  <button onclick="filterCat('dev')" class="bg-gray-200 px-3 py-1 rounded">Dev</button>
-  <button onclick="filterCat('marketing')" class="bg-gray-200 px-3 py-1 rounded">Marketing</button>
+<div class="flex gap-2 mb-4 flex-wrap" id="filters">
+  <button onclick="filterCat('all')" class="filter-btn bg-black text-white px-3 py-1 rounded transition-all duration-200">Todo</button>
+  <button onclick="filterCat('video')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Video</button>
+  <button onclick="filterCat('imagen')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Imagen</button>
+  <button onclick="filterCat('audio')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Audio</button>
+  <button onclick="filterCat('dev')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Dev</button>
+  <button onclick="filterCat('marketing')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Marketing</button>
 </div>
 
 <!-- BUSCADOR -->
@@ -85,6 +85,34 @@ async function recommendAI(query) {
       scores[tool.name] = score;
     }
   });
+
+  function setActiveButton(cat){
+  const buttons = document.querySelectorAll(".filter-btn");
+
+  buttons.forEach(btn => {
+    btn.classList.remove("bg-black", "text-white");
+    btn.classList.add("bg-gray-200");
+  });
+
+  // encontrar el botón clickeado
+  const active = Array.from(buttons).find(b =>
+    b.getAttribute("onclick").includes(cat)
+  );
+
+  if(active){
+    active.classList.remove("bg-gray-200");
+    active.classList.add("bg-black", "text-white");
+  }
+}
+
+  function filterCat(cat){
+  currentCategory = cat;
+
+  setActiveButton(cat); // 👈 aquí
+
+  const q = document.getElementById("search").value.toLowerCase();
+  renderResults(q);
+}
 
   const sorted = Object.entries(scores)
     .sort((a,b) => b[1] - a[1])
