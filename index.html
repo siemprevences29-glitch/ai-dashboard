@@ -13,17 +13,17 @@
 <!-- FILTROS -->
 
 <div class="flex gap-2 mb-4 flex-wrap" id="filters">
-  <button onclick="filterCat('all')" class="filter-btn bg-black text-white px-3 py-1 rounded transition-all duration-200">Todo</button>
-  <button onclick="filterCat('video')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Video</button>
-  <button onclick="filterCat('imagen')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Imagen</button>
-  <button onclick="filterCat('audio')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Audio</button>
-  <button onclick="filterCat('dev')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Dev</button>
-  <button onclick="filterCat('marketing')" class="filter-btn bg-gray-200 px-3 py-1 rounded transition-all duration-200">Marketing</button>
+  <button onclick="filterCat('all')" class="filter-btn bg-black text-white px-3 py-1 rounded">Todo</button>
+  <button onclick="filterCat('video')" class="filter-btn bg-gray-200 px-3 py-1 rounded">Video</button>
+  <button onclick="filterCat('imagen')" class="filter-btn bg-gray-200 px-3 py-1 rounded">Imagen</button>
+  <button onclick="filterCat('audio')" class="filter-btn bg-gray-200 px-3 py-1 rounded">Audio</button>
+  <button onclick="filterCat('dev')" class="filter-btn bg-gray-200 px-3 py-1 rounded">Dev</button>
+  <button onclick="filterCat('marketing')" class="filter-btn bg-gray-200 px-3 py-1 rounded">Marketing</button>
 </div>
 
 <!-- BUSCADOR -->
 
-<input id="search" placeholder="¿Qué quieres hacer? (ej: crear video, contenido, código)" class="border p-2 w-full mb-4"/>
+<input id="search" placeholder="¿Qué quieres hacer?" class="border p-2 w-full mb-4"/>
 
 <!-- RECOMENDADOR -->
 
@@ -57,14 +57,35 @@ fetch('tools.json')
     renderResults("");
   });
 
-// FILTRO POR CATEGORÍA
+// ACTIVAR BOTÓN
+function setActiveButton(cat){
+  const buttons = document.querySelectorAll(".filter-btn");
+
+  buttons.forEach(btn => {
+    btn.classList.remove("bg-black","text-white");
+    btn.classList.add("bg-gray-200");
+  });
+
+  const active = Array.from(buttons).find(b =>
+    b.getAttribute("onclick").includes(cat)
+  );
+
+  if(active){
+    active.classList.remove("bg-gray-200");
+    active.classList.add("bg-black","text-white");
+  }
+}
+
+// FILTRO
 function filterCat(cat){
   currentCategory = cat;
+  setActiveButton(cat);
+
   const q = document.getElementById("search").value.toLowerCase();
   renderResults(q);
 }
 
-// RECOMENDADOR SIMPLE
+// RECOMENDADOR
 async function recommendAI(query) {
   query = query.toLowerCase();
 
@@ -73,9 +94,7 @@ async function recommendAI(query) {
   tools.forEach(tool => {
     let score = 0;
 
-    const keywords = tool.use.split(" ");
-
-    keywords.forEach(k => {
+    tool.use.split(" ").forEach(k => {
       if(query.includes(k)) score += 2;
     });
 
@@ -86,59 +105,27 @@ async function recommendAI(query) {
     }
   });
 
-  function setActiveButton(cat){
-  const buttons = document.querySelectorAll(".filter-btn");
-
-  buttons.forEach(btn => {
-    btn.classList.remove("bg-black", "text-white");
-    btn.classList.add("bg-gray-200");
-  });
-
-  // encontrar el botón clickeado
-  const active = Array.from(buttons).find(b =>
-    b.getAttribute("onclick").includes(cat)
-  );
-
-  if(active){
-    active.classList.remove("bg-gray-200");
-    active.classList.add("bg-black", "text-white");
-  }
-}
-
-  function filterCat(cat){
-  currentCategory = cat;
-
-  setActiveButton(cat); // 👈 aquí
-
-  const q = document.getElementById("search").value.toLowerCase();
-  renderResults(q);
-}
-
   const sorted = Object.entries(scores)
     .sort((a,b) => b[1] - a[1])
     .slice(0,5)
     .map(x => x[0]);
 
-  if(sorted.length === 0){
-    return "ChatGPT → Perplexity";
-  }
-
-  return sorted.join(" → ");
+  return sorted.length ? sorted.join(" → ") : "ChatGPT → Perplexity";
 }
 
-// RENDER RESULTADOS (ARREGLADO)
+// RENDER RESULTADOS
 function renderResults(q = "") {
 
   const filtered = tools.filter(t => {
-    
- const words = q.split(" ").filter(w => w.length > 2);
 
-const matchSearch =
-  words.length === 0 || // 👈 CLAVE
-  words.some(word =>
-    t.use.toLowerCase().includes(word) ||
-    t.name.toLowerCase().includes(word)
-  );
+    const words = q.split(" ").filter(w => w.length > 2);
+
+    const matchSearch =
+      words.length === 0 ||
+      words.some(word =>
+        t.use.toLowerCase().includes(word) ||
+        t.name.toLowerCase().includes(word)
+      );
 
     const matchCat =
       currentCategory === "all" ||
@@ -166,9 +153,8 @@ document.getElementById("search").addEventListener("input", e => {
   const q = e.target.value.toLowerCase();
 
   recommendAI(q).then(result => {
-    document.getElementById("recommendation").innerHTML = `
-      <b>🤖 Recomendación inteligente:</b> ${result}
-    `;
+    document.getElementById("recommendation").innerHTML =
+      `<b>🤖 Recomendación inteligente:</b> ${result}`;
   });
 
   renderResults(q);
@@ -214,4 +200,3 @@ renderUsage();
 
 </body>
 </html>
-
